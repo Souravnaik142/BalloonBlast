@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Balloon Pop — Kid Mouse Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--panel:#fff8ea;
+--bg:#a6f0ff;
+--accent:#ff7eb6;
+--muted:#6b6b6b;
+--left-width:320px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+body{
+background: linear-gradient(180deg, #d6f6ff 0%, #fff9f0 60%);
+overflow:hidden;
+color:#222;
+display:flex;
+align-items:stretch;
+gap:16px;
+padding:16px;
+}
+.panel{
+width:var(--left-width);
+background: radial-gradient(circle at top left, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+padding:18px;
+border-radius:18px;
+box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+.title{display:flex;align-items:center;gap:12px;}
+.title h1{margin:0;font-size:20px;color:#ff5ca8}
+.small{font-size:13px;color:var(--muted)}
+label{font-size:13px;color:#444;margin-bottom:6px;display:block}
+input[type="text"]{width:100%;padding:10px;border-radius:10px;border:2px solid #ffd6ea;background:transparent;font-size:16px;}
+.controls{display:flex;gap:8px;align-items:center;margin-top:6px}
+.btn{flex:1;padding:10px 12px;border-radius:10px;border:none;background:linear-gradient(180deg,#ffb6db,#ff7eb6);color:white;font-weight:700;cursor:pointer;box-shadow:0 6px 10px rgba(255,126,182,0.28);}
+.btn.secondary{background:linear-gradient(180deg,#b3f6ff,#79dfff);color:#04546b}
+.toggle{display:inline-flex;align-items:center;gap:8px;padding:8px;border-radius:10px;background:#fff;border:1px solid rgba(0,0,0,0.06);cursor:pointer;}
+select{padding:10px;border-radius:10px;border:2px solid #ffd6ea;background:transparent;font-weight:600}
+.big-timer{font-size:36px;font-weight:800;color:#ff5ca8;text-align:center;margin-top:6px;background:linear-gradient(90deg,#fff,#ffd6ea);padding:8px;border-radius:12px;}
+.play-area{flex:1;border-radius:18px;padding:12px;position:relative;overflow:hidden;background:radial-gradient(circle at 20% 10%, rgba(255,255,255,0.6), transparent 15%),linear-gradient(180deg,#e8ffef 0%, #dff6ff 100%);box-shadow: 0 8px 24px rgba(0,0,0,0.06);min-height:520px;}
+.sky{position:absolute;inset:12px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.2), transparent 25%),linear-gradient(180deg,#bff0ff 0%, #fff7f0 100%);}
+.balloon{position:absolute;width:90px;height:110px;border-radius:50% 50% 50% 50% / 55% 55% 45% 45%;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;touch-action:none;transform-origin:center bottom;box-shadow: 0 10px 18px rgba(0,0,0,0.12);transition: transform .12s ease;border:4px solid rgba(255,255,255,0.35);}
+.balloon:active{ transform:scale(0.95) }
+.string{position:absolute;left:50%;transform:translateX(-50%);bottom:-18px;height:36px;width:4px;border-radius:6px;box-shadow:inset 0 -6px 6px rgba(0,0,0,0.06);}
+.bomb{display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;background:linear-gradient(180deg,#222,#333);color:white;border-radius:50%;width:70px;height:70px;border:4px solid rgba(255,255,255,0.12);}
+.pop{animation:popEffect 380ms ease forwards;}
+@keyframes popEffect{0%{transform:scale(1);opacity:1}60%{transform:scale(1.6) rotate(-10deg);opacity:0.95}100%{transform:scale(0.0);opacity:0}}
+.boom {position:absolute;pointer-events:none;border-radius:50%;transform:translate(-50%,-50%) scale(0);opacity:1;background: radial-gradient(circle at 30% 30%, #ffd9b3, #ff8b6b);box-shadow: 0 6px 18px rgba(255,140,80,0.25);animation:boomAnim 580ms ease forwards;}
+@keyframes boomAnim {0%{transform:translate(-50%,-50%) scale(0.2);opacity:1}60%{transform:translate(-50%,-50%) scale(1.2);opacity:0.9}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}
+.hud{display:flex;gap:12px;position:absolute;left:18px;top:18px;z-index:20;align-items:center;}
+.score{background:linear-gradient(180deg,#ffffff,#fff1f6);padding:10px;border-radius:10px;font-weight:700;box-shadow:0 6px 12px rgba(0,0,0,0.06);}
+.modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.95);width:min(720px,95%);background:#fff;border-radius:14px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,0.18);z-index:50;display:none;flex-direction:column;gap:12px;}
+.modal.show{display:flex;animation:modalIn .22s ease forwards}
+@keyframes modalIn{from{transform:translate(-50%,-50%) scale(.92);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.stars{font-size:28px;color:#ffb86b}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.report-row{background:#fff8f3;padding:10px;border-radius:10px}
+@media (max-width:920px){body{flex-direction:column;padding:10px}.panel{width:100%;order:2}.play-area{order:1;min-height:420px}}
+footer{position:absolute;right:12px;bottom:12px;font-size:12px;color:rgba(0,0,0,0.45)}
+</style>
+</head>
+<body>
+<div class="panel" aria-label="Control Panel">
+<div class="title">
+<img src="" alt="" style="width:48px;height:48px;border-radius:50%;background:linear-gradient(180deg,#ffd6ea,#ff7eb6)" />
+<div>
+<h1>Balloon Pop</h1>
+<div class="small">Mouse practice for little hands 🎈</div>
+</div>
+</div>
+
+<div>
+<label for="playerName">Player name</label>
+<input id="playerName" type="text" placeholder="Type player's name" value="Player 1" maxlength="20"/>
+</div>
+
+<div style="display:flex;gap:8px;align-items:center;">
+<div style="flex:1">
+<label for="gameTime">Game time (seconds)</label>
+<select id="gameTime">
+<option value="30">30 sec</option>
+<option value="60" selected>60 sec</option>
+<option value="90">90 sec</option>
+<option value="120">120 sec</option>
+</select>
+</div>
+<div style="width:110px">
+<label>Music</label>
+<div id="musicToggle" class="toggle" role="button" aria-pressed="false" title="Toggle music">🎵 Off</div>
+</div>
+</div>
+
+<div style="display:flex;gap:8px;">
+<button id="startBtn" class="btn">Start</button>
+<button id="restartBtn" class="btn secondary">Reset</button>
+</div>
+
+<div>
+<div class="small">Countdown</div>
+<div id="timerBox" class="big-timer">00:60</div>
+</div>
+
+<div>
+<div class="small">Quick tips</div>
+<ul style="margin:8px 0 0 16px;padding:0;line-height:1.5;color:#444">
+<li>Click the colorful balloons to pop them (+3).</li>
+<li>Avoid clicking bombs (they subtract -1).</li>
+<li>Try to be accurate — accuracy shows in the report.</li>
+</ul>
+</div>
+
+<div style="margin-top:auto;font-size:13px;color:var(--muted)">
+<strong>Last score:</strong> <span id="lastScore">—</span><br/>
+<small>Results are saved locally on this device.</small>
+</div>
+</div>
+
+<div class="play-area" aria-live="polite">
+<div class="hud">
+<div class="score">Score: <span id="score">0</span></div>
+<div class="score">Clicks: <span id="clicks">0</span></div>
+<div class="score">Popped: <span id="popped">0</span></div>
+</div>
+
+<div class="sky" id="sky"></div>
+
+<div id="reportModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<h2 style="margin:0">Game Report</h2>
+<div style="text-align:right">
+<div class="stars" id="starsDisplay"></div>
+<div style="font-size:12px;color:#666" id="playerLabel">Player</div>
+</div>
+</div>
+
+<div style="display:flex;gap:12px;align-items:center">
+<div style="font-size:28px;font-weight:800;color:#ff5ca8" id="finalScore">0</div>
+<div style="flex:1">
+<div class="small">Accuracy</div>
+<div style="font-weight:700;font-size:18px" id="finalAccuracy">0%</div>
+</div>
+<div style="flex:1">
+<div class="small">Avg reaction</div>
+<div style="font-weight:700;font-size:18px" id="finalReaction">— ms</div>
+</div>
+</div>
+
+<div class="report-grid">
+<div class="report-row">Total clicks: <strong id="rClicks">0</strong></div>
+<div class="report-row">Balloons popped: <strong id="rPopped">0</strong></div>
+<div class="report-row">Bombs clicked: <strong id="rBombs">0</strong></div>
+<div class="report-row">Misses (not popped): <strong id="rMisses">0</strong></div>
+</div>
+
+<div style="background:#fff7f0;padding:12px;border-radius:10px">
+<strong>Parent insight</strong>
+<p id="parentInsight" style="margin:8px 0 0 0;color:#444"></p>
+</div>
+
+<div style="display:flex;gap:8px;justify-content:flex-end">
+<button id="playAgainBtn" class="btn secondary">Play again</button>
+<button id="saveScoreBtn" class="btn">Save</button>
+</div>
+</div>
+
+<footer>Made for small kids — colorful & safe 🎈</footer>
+</div>
+
+<script>
+/* --------------------------
+CONFIG
+--------------------------*/
+const CONFIG = {
+spawnBaseMs: 750,
+spawnJitterMs: 420,
+balloonMinSize: 64,
+balloonMaxSize: 110,
+fallSpeedMin: 3500,
+fallSpeedMax: 9000,
+bombChance: 0.12,
+clickReward: 3,
+bombPenalty: -1,
+clickablePadding: 8,
+maxReactHistory: 5000,
+}
+
+/* --------------------------
+STATE
+--------------------------*/
+let gameState = {
+running: false,
+timer: 60,
+timeLeft: 60,
+score: 0,
+clicks: 0,
+popped: 0,
+bombsClicked: 0,
+misses: 0,
+spawnCount: 0,
+reactionTimes: [],
+spawnTimerId: null,
+endTimeout: null,
+balloonIdCounter: 0,
+audioOn: false,
+audioCtx: null,
+musicInterval: null,
+}
+
+/* --------------------------
+DOM
+--------------------------*/
+const sky = document.getElementById('sky');
+const scoreEl = document.getElementById('score');
+const clicksEl = document.getElementById('clicks');
+const poppedEl = document.getElementById('popped');
+const timerBox = document.getElementById('timerBox');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const gameTimeSel = document.getElementById('gameTime');
+const playerNameInput = document.getElementById('playerName');
+const musicToggle = document.getElementById('musicToggle');
+const reportModal = document.getElementById('reportModal');
+const finalScore = document.getElementById('finalScore');
+const finalAccuracy = document.getElementById('finalAccuracy');
+const finalReaction = document.getElementById('finalReaction');
+const rClicks = document.getElementById('rClicks');
+const rPopped = document.getElementById('rPopped');
+const rBombs = document.getElementById('rBombs');
+const rMisses = document.getElementById('rMisses');
+const parentInsight = document.getElementById('parentInsight');
+const playerLabel = document.getElementById('playerLabel');
+const starsDisplay = document.getElementById('starsDisplay');
+const lastScore = document.getElementById('lastScore');
+const playAgainBtn = document.getElementById('playAgainBtn');
+const saveScoreBtn = document.getElementById('saveScoreBtn');
+
+/* --------------------------
+UTILS
+--------------------------*/
+function rand(min,max){return Math.random()*(max-min)+min;}
+function choose(a){return a[Math.floor(Math.random()*a.length)];}
+function formatTime(secs){return `${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;}
+/* --------------------------
+AUDIO
+--------------------------*/
+function ensureAudio(){if(!gameState.audioCtx)gameState.audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
+function playPopSound(){if(!gameState.audioOn)return;ensureAudio();const ctx=gameState.audioCtx;const o=ctx.createOscillator();const g=ctx.createGain();o.type='sine';o.frequency.value=880*(1+Math.random()*0.06);g.gain.value=0.001;o.connect(g);g.connect(ctx.destination);o.start();g.gain.exponentialRampToValueAtTime(0.18,ctx.currentTime+0.01);g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.22);o.stop(ctx.currentTime+0.25);}
+function playBombSound(){if(!gameState.audioOn)return;ensureAudio();const ctx=gameState.audioCtx;const bufferSize=ctx.sampleRate*0.15;const buffer=ctx.createBuffer(1,bufferSize,ctx.sampleRate);const data=buffer.getChannelData(0);for(let i=0;i<bufferSize;i++){data[i]=(Math.random()*2-1)*Math.exp(-i/(bufferSize*0.03));}const source=ctx.createBufferSource();source.buffer=buffer;source.connect(ctx.destination);source.start();}
+function startMusicLoop(){if(gameState.musicInterval||!gameState.audioOn)return;ensureAudio();const ctx=gameState.audioCtx;let idx=0;const notes=[440,550,660,880];gameState.musicInterval=setInterval(()=>{const freq=notes[idx%notes.length]*(1+(Math.random()-0.5)*0.04);const o=ctx.createOscillator();const g=ctx.createGain();o.type='triangle';o.frequency.value=freq;g.gain.value=0.0005;o.connect(g);g.connect(ctx.destination);o.start();g.gain.exponentialRampToValueAtTime(0.06,ctx.currentTime+0.05);g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.4);o.stop(ctx.currentTime+0.42);idx++;},480);}
+function stopMusicLoop(){if(gameState.musicInterval){clearInterval(gameState.musicInterval);gameState.musicInterval=null;}}
+
+/* --------------------------
+HUD
+--------------------------*/
+function updateHUD(){
+scoreEl.textContent=gameState.score;
+clicksEl.textContent=gameState.clicks;
+poppedEl.textContent=gameState.popped;
+timerBox.textContent=formatTime(gameState.timeLeft);
+}
+
+/* --------------------------
+SPAWN BALLOON
+--------------------------*/
+const COLORS=['#ffadad','#ffd6a5','#fdffb6','#caffbf','#9bf6ff','#a0c4ff','#bdb2ff','#ffc6ff','#ff8fab'];
+function spawnOne(){
+if(!gameState.running)return;
+const id=++gameState.balloonIdCounter;
+const isBomb=Math.random()<CONFIG.bombChance;
+gameState.spawnCount++;
+const el=document.createElement('div');
+el.classList.add('balloon');
+el.dataset.id=id;
+el.dataset.spawnTime=Date.now();
+const size=Math.floor(rand(CONFIG.balloonMinSize,CONFIG.balloonMaxSize));
+el.style.width=size+'px';
+el.style.height=size*1.2+'px';
+el.style.left=rand(0,sky.clientWidth-size)+'px';
+el.style.bottom=-size+'px';
+if(!isBomb){
+el.style.background=choose(COLORS);
+const stringDiv=document.createElement('div');stringDiv.className='string';el.appendChild(stringDiv);
+}else{
+el.classList.add('bomb');
+el.textContent='💣';
+el.style.width='70px';
+el.style.height='70px';
+el.style.lineHeight='70px';
+el.style.fontSize='32px';
+}
+sky.appendChild(el);
+
+const fallDuration=rand(CONFIG.fallSpeedMin,CONFIG.fallSpeedMax);
+const startTime=performance.now();
+function animate(now){
+const t=(now-startTime)/fallDuration;
+if(t>=1){
+el.remove();
+if(!isBomb)gameState.misses++;
+updateHUD();
+return;
+}
+el.style.bottom=-size+t*(sky.clientHeight+size)+'px';
+requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+el.addEventListener('click',(e)=>{
+const clickTime=Date.now();
+gameState.clicks++;
+if(!isBomb){
+gameState.popped++;
+gameState.score+=CONFIG.clickReward;
+const reactTime=clickTime-Number(el.dataset.spawnTime);
+gameState.reactionTimes.push(reactTime);
+if(gameState.reactionTimes.length>CONFIG.maxReactHistory)gameState.reactionTimes.shift();
+playPopSound();
+showPopEffect(el);
+}else{
+gameState.score+=CONFIG.bombPenalty;
+gameState.bombsClicked++;
+playBombSound();
+showBoomEffect(el);
+}
+el.remove();
+updateHUD();
+e.stopPropagation();
+});
+gameState.spawnTimerId=setTimeout(spawnOne, CONFIG.spawnBaseMs + rand(-CONFIG.spawnJitterMs, CONFIG.spawnJitterMs));
+}
+
+/* --------------------------
+POP & BOOM
+--------------------------*/
+function showPopEffect(el){
+const pop=document.createElement('div');
+pop.className='pop';
+pop.style.left=el.offsetLeft+el.offsetWidth/2+'px';
+pop.style.top=el.offsetTop+el.offsetHeight/2+'px';
+sky.appendChild(pop);
+setTimeout(()=>pop.remove(),380);
+}
+function showBoomEffect(el){
+const boom=document.createElement('div');
+boom.className='boom';
+boom.style.left=el.offsetLeft+el.offsetWidth/2+'px';
+boom.style.top=el.offsetTop+el.offsetHeight/2+'px';
+sky.appendChild(boom);
+setTimeout(()=>boom.remove(),580);
+}
+
+/* --------------------------
+GAME TIMER
+--------------------------*/
+let gameTicker=null;
+function startTimer(){
+gameState.timeLeft=gameState.timer;
+updateHUD();
+gameTicker=setInterval(()=>{
+gameState.timeLeft--;
+updateHUD();
+if(gameState.timeLeft<=0){
+clearInterval(gameTicker);
+endGame();
+}
+},1000);
+}
+
+/* --------------------------
+END GAME
+--------------------------*/
+function endGame(){
+if(!gameState.running)return;
+gameState.running=false;
+if(gameState.spawnTimerId)clearTimeout(gameState.spawnTimerId);
+if(gameTicker)clearInterval(gameTicker);
+stopMusicLoop();
+const children=Array.from(sky.querySelectorAll('.balloon'));
+children.forEach(c=>c.remove());
+
+const clicks=gameState.clicks;
+const popped=gameState.popped;
+const bombsClicked=gameState.bombsClicked;
+const misses=gameState.misses;
+const score=gameState.score;
+const accuracy=clicks>0?Math.round((popped/clicks)*100):0;
+const avgReaction=gameState.reactionTimes.length?Math.round(gameState.reactionTimes.reduce((a,b)=>a+b,0)/gameState.reactionTimes.length):null;
+
+let starCount=0;
+if(accuracy>=90)starCount=5;
+else if(accuracy>=80)starCount=4;
+else if(accuracy>=60)starCount=3;
+else if(accuracy>=40)starCount=2;
+else if(accuracy>=20)starCount=1;
+
+const name=(playerNameInput.value||'Player').trim();
+let insight=`${name} scored ${score} points in ${gameState.timer} seconds. `;
+if(accuracy>=90) insight+="Excellent mouse control and accuracy — a great sign of steady focus!";
+else if(accuracy>=75) insight+="Good progress. Encourage slightly slower, careful clicks to improve accuracy.";
+else insight+="Working on accuracy will help — try shorter rounds and focus on popping one balloon at a time.";
+insight+=` Average reaction time: ${avgReaction?avgReaction+' ms':'—'}.`;
+
+finalScore.textContent=score;
+finalAccuracy.textContent=accuracy+'%';
+finalReaction.textContent=avgReaction?avgReaction+' ms':'—';
+rClicks.textContent=clicks;
+rPopped.textContent=popped;
+rBombs.textContent=bombsClicked;
+rMisses.textContent=misses;
+playerLabel.textContent=`${name} • ${gameState.timer}s`;
+parentInsight.textContent=insight;
+
+starsDisplay.textContent='';
+reportModal.classList.add('show');
+reportModal.style.display='flex';
+reportModal.setAttribute('aria-hidden','false');
+
+for(let i=0;i<5;i++){
+setTimeout(()=>{
+const span=document.createElement('span');
+span.textContent=(i<starCount)?'★':'☆';
+span.style.display='inline-block';
+span.style.transform='scale(0)';
+span.style.transition='transform 0.3s ease';
+starsDisplay.appendChild(span);
+requestAnimationFrame(()=>{span.style.transform='scale(1.3)';});
+setTimeout(()=>{span.style.transform='scale(1)';},300);
+},i*300);
+}
+
+startBtn.disabled=false;
+startBtn.textContent='Start';
+lastScore.textContent=`${score} pts`;
+try{
+const prev=JSON.parse(localStorage.getItem('balloon_scores')||'[]');
+prev.unshift({name,date:new Date().toISOString(),score,clicks,popped,bombsClicked,accuracy,avgReaction,stars:starCount,time:gameState.timer});
+localStorage.setItem('balloon_scores',JSON.stringify(prev.slice(0,20)));
+}catch(e){}
+}
+
+/* --------------------------
+START / RESET
+--------------------------*/
+function startGame(){
+if(gameState.running)return;
+gameState.running=true;
+gameState.score=0;
+gameState.clicks=0;
+gameState.popped=0;
+gameState.bombsClicked=0;
+gameState.misses=0;
+gameState.reactionTimes=[];
+gameState.timer=parseInt(gameTimeSel.value,10);
+updateHUD();
+startBtn.disabled=true;
+startBtn.textContent='Running...';
+reportModal.classList.remove('show');
+spawnOne();
+startTimer();
+if(gameState.audioOn)startMusicLoop();
+}
+
+function resetGame(){
+    gameState.running=false;
+    if(gameState.spawnTimerId)clearTimeout(gameState.spawnTimerId);
+    if(gameTicker)clearInterval(gameTicker);
+    stopMusicLoop();
+    sky.innerHTML='';
+    gameState.score=0;
+    gameState.clicks=0;
+    gameState.popped=0;
+    gameState.bombsClicked=0;
+    gameState.misses=0;
+    gameState.reactionTimes=[];
+    updateHUD();
+    reportModal.classList.remove('show');
+    reportModal.style.display = 'none';
+    startBtn.disabled=false;
+    startBtn.textContent='Start';
+}
+
+
+/* --------------------------
+EVENTS
+--------------------------*/
+startBtn.addEventListener('click',startGame);
+restartBtn.addEventListener('click',resetGame);
+playAgainBtn.addEventListener('click',()=>{
+reportModal.classList.remove('show');
+ reportModal.style.display = 'none';
+resetGame();
+startGame();
+});
+musicToggle.addEventListener('click',()=>{
+gameState.audioOn=!gameState.audioOn;
+musicToggle.textContent=gameState.audioOn?'🎵 On':'🎵 Off';
+musicToggle.setAttribute('aria-pressed',gameState.audioOn);
+});
+
+/* --------------------------
+INIT
+--------------------------*/
+updateHUD();
+</script>
+</body>
+</html>
