@@ -499,10 +499,16 @@ reportModal.classList.remove('show');
 resetGame();
 startGame();
 });
-musicToggle.addEventListener('click',()=>{
-gameState.audioOn=!gameState.audioOn;
-musicToggle.textContent=gameState.audioOn?'🎵 On':'🎵 Off';
-musicToggle.setAttribute('aria-pressed',gameState.audioOn);
+musicToggle.addEventListener('click', () => {
+  gameState.audioOn = !gameState.audioOn;
+  musicToggle.textContent = gameState.audioOn ? '🎵 On' : '🎵 Off';
+  musicToggle.setAttribute('aria-pressed', gameState.audioOn);
+
+  if (gameState.audioOn) {
+    startMusicLoop();   // ✅ actually start the music
+  } else {
+    stopMusicLoop();    // ✅ actually stop the music
+  }
 });
 
 /* --------------------------
