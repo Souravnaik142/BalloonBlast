@@ -254,8 +254,43 @@ AUDIO
 function ensureAudio(){if(!gameState.audioCtx)gameState.audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
 function playPopSound(){if(!gameState.audioOn)return;ensureAudio();const ctx=gameState.audioCtx;const o=ctx.createOscillator();const g=ctx.createGain();o.type='sine';o.frequency.value=880*(1+Math.random()*0.06);g.gain.value=0.001;o.connect(g);g.connect(ctx.destination);o.start();g.gain.exponentialRampToValueAtTime(0.18,ctx.currentTime+0.01);g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.22);o.stop(ctx.currentTime+0.25);}
 function playBombSound(){if(!gameState.audioOn)return;ensureAudio();const ctx=gameState.audioCtx;const bufferSize=ctx.sampleRate*0.15;const buffer=ctx.createBuffer(1,bufferSize,ctx.sampleRate);const data=buffer.getChannelData(0);for(let i=0;i<bufferSize;i++){data[i]=(Math.random()*2-1)*Math.exp(-i/(bufferSize*0.03));}const source=ctx.createBufferSource();source.buffer=buffer;source.connect(ctx.destination);source.start();}
-function startMusicLoop(){if(gameState.musicInterval||!gameState.audioOn)return;ensureAudio();const ctx=gameState.audioCtx;let idx=0;const notes=[440,550,660,880];gameState.musicInterval=setInterval(()=>{const freq=notes[idx%notes.length]*(1+(Math.random()-0.5)*0.04);const o=ctx.createOscillator();const g=ctx.createGain();o.type='triangle';o.frequency.value=freq;g.gain.value=0.0005;o.connect(g);g.connect(ctx.destination);o.start();g.gain.exponentialRampToValueAtTime(0.06,ctx.currentTime+0.05);g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.4);o.stop(ctx.currentTime+0.42);idx++;},480);}
-function stopMusicLoop(){if(gameState.musicInterval){clearInterval(gameState.musicInterval);gameState.musicInterval=null;}}
+function startMusicLoop() {
+  if (gameState.musicInterval || !gameState.audioOn) return;
+  ensureAudio();
+  const ctx = gameState.audioCtx;
+
+  // A playful melody (C major)
+  const melody = [262, 330, 392, 523]; // C4, E4, G4, C5
+  let index = 0;
+
+  gameState.musicInterval = setInterval(() => {
+    const freq = melody[index % melody.length];
+    index++;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'square';   // "playful" sound
+    osc.frequency.value = freq;
+
+    // Gentle volume
+    gain.gain.value = 0.05;
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.stop(ctx.currentTime + 0.6);
+  }, 600); // play a note every 600ms
+}
+
+function stopMusicLoop() {
+  if (gameState.musicInterval) {
+    clearInterval(gameState.musicInterval);
+    gameState.musicInterval = null;
+  }
+}
 
 /* --------------------------
 HUD
