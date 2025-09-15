@@ -259,8 +259,15 @@ function startMusicLoop() {
   ensureAudio();
   const ctx = gameState.audioCtx;
 
-  // A playful melody (C major)
-  const melody = [262, 330, 392, 523]; // C4, E4, G4, C5
+  // 🎵 3 kid-friendly melodies (in Hz, notes = C major scale)
+  const melodies = [
+    [262, 330, 392, 523],          // C – E – G – C (classic happy)
+    [262, 294, 330, 349, 392],     // C – D – E – F – G (ascending scale)
+    [392, 330, 349, 262, 294]      // G – E – F – C – D (playful jumpy)
+  ];
+
+  // Pick a random melody each time
+  const melody = melodies[Math.floor(Math.random() * melodies.length)];
   let index = 0;
 
   gameState.musicInterval = setInterval(() => {
@@ -270,20 +277,21 @@ function startMusicLoop() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = 'square';   // "playful" sound
+    osc.type = 'triangle';  // softer than square, still playful
     osc.frequency.value = freq;
 
     // Gentle volume
-    gain.gain.value = 0.05;
+    gain.gain.value = 0.06;
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-    osc.stop(ctx.currentTime + 0.6);
-  }, 600); // play a note every 600ms
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.stop(ctx.currentTime + 0.5);
+  }, 550); // note every 0.55s
 }
+
 
 function stopMusicLoop() {
   if (gameState.musicInterval) {
