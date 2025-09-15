@@ -302,28 +302,28 @@ function startMusicLoop() {
   ensureAudio();
   const ctx = gameState.audioCtx;
 
-  // 🎵 3 kid-friendly melodies (in Hz, notes = C major scale)
   const melodies = [
-    [262, 330, 392, 523],          // C – E – G – C (classic happy)
-    [262, 294, 330, 349, 392],     // C – D – E – F – G (ascending scale)
-    [392, 330, 349, 262, 294]      // G – E – F – C – D (playful jumpy)
+    [262, 330, 392, 523],
+    [262, 294, 330, 349, 392],
+    [392, 330, 349, 262, 294]
   ];
 
-  // Pick a random melody each time
   const melody = melodies[Math.floor(Math.random() * melodies.length)];
   let index = 0;
 
-  gameState.musicInterval = setInterval(() => {
+  // initial tempo (ms per note)
+  gameState.musicTempo = 550;
+
+  function playNote() {
+    if (!gameState.audioOn) return;
     const freq = melody[index % melody.length];
     index++;
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = 'triangle';  // softer than square, still playful
+    osc.type = 'triangle';
     osc.frequency.value = freq;
-
-    // Gentle volume
     gain.gain.value = 0.06;
 
     osc.connect(gain);
@@ -332,8 +332,14 @@ function startMusicLoop() {
     osc.start();
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
     osc.stop(ctx.currentTime + 0.5);
-  }, 550); // note every 0.55s
+
+    // schedule next note with current tempo
+    gameState.musicInterval = setTimeout(playNote, gameState.musicTempo);
+  }
+
+  playNote();
 }
+
 
 
 function stopMusicLoop() {
@@ -447,18 +453,26 @@ setTimeout(()=>boom.remove(),580);
 GAME TIMER
 --------------------------*/
 let gameTicker=null;
-function startTimer(){
-gameState.timeLeft=gameState.timer;
-updateHUD();
-gameTicker=setInterval(()=>{
-gameState.timeLeft--;
-updateHUD();
-if(gameState.timeLeft<=0){
-clearInterval(gameTicker);
-endGame();
+function startTimer() {
+  const timer = setInterval(() => {
+    gameState.timeLeft--;
+    timeLeftEl.textContent = gameState.timeLeft;
+    progressFill.style.width = (gameState.timeLeft / gameState.gameDuration) * 100 + '%';
+
+    // 🎵 speed up music as time runs out
+    if (gameState.timeLeft > 0) {
+      const progress = 1 - (gameState.timeLeft / gameState.gameDuration);
+      // tempo goes from 550ms → 300ms gradually
+      gameState.musicTempo = 550 - Math.floor(progress * 250);
+    }
+
+    if (gameState.timeLeft <= 0) {
+      clearInterval(timer);
+      endGame();
+    }
+  }, 1000);
 }
-},1000);
-}
+
 
 /* --------------------------
 END GAME
