@@ -458,22 +458,24 @@ function startTimer() {
   gameTicker = setInterval(() => {
     if (!gameState.running) return;
 
-    gameState.timeLeft--;
-
-    updateHUD(); // updates timerBox, score, clicks, popped
-
-    // 🎵 Speed up music as time runs out
     if (gameState.timeLeft > 0) {
+      gameState.timeLeft--;
+      updateHUD();
+
+      // 🎵 Speed up music as time runs out
       const progress = 1 - (gameState.timeLeft / gameState.timer);
       gameState.musicTempo = 550 - Math.floor(progress * 250);
     }
 
     if (gameState.timeLeft <= 0) {
       clearInterval(gameTicker);
+      gameState.timeLeft = 0;  // ✅ lock at 0
+      updateHUD();
       endGame();
     }
   }, 1000);
 }
+
 
 
 /* --------------------------
@@ -551,25 +553,29 @@ localStorage.setItem('balloon_scores',JSON.stringify(prev.slice(0,20)));
 /* --------------------------
 START / RESET
 --------------------------*/
-function startGame(){
-  if(gameState.running)return;
-  gameState.running=true;
-  gameState.score=0;
-  gameState.clicks=0;
-  gameState.popped=0;
-  gameState.bombsClicked=0;
-  gameState.misses=0;
-  gameState.reactionTimes=[];
-  gameState.timer=parseInt(gameTimeSel.value,10);
-  gameState.timeLeft=gameState.timer;   // ✅ Reset here
+function startGame() {
+  if (gameState.running) return;
+  gameState.running = true;
+  gameState.score = 0;
+  gameState.clicks = 0;
+  gameState.popped = 0;
+  gameState.bombsClicked = 0;
+  gameState.misses = 0;
+  gameState.reactionTimes = [];
+  gameState.timer = parseInt(gameTimeSel.value, 10);
+  gameState.timeLeft = gameState.timer;   // ✅ reset here
   updateHUD();
-  startBtn.disabled=true;
-  startBtn.textContent='Running...';
+
+  startBtn.disabled = true;
+  startBtn.textContent = 'Running...';
   reportModal.classList.remove('show');
+
   spawnOne();
   startTimer();
-  if(gameState.audioOn)startMusicLoop();
+
+  if (gameState.audioOn) startMusicLoop();
 }
+
 
 
 function resetGame(){
