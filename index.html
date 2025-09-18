@@ -277,27 +277,31 @@ function playPopSound() {
 }
 function playBombSound() {
   if (!gameState.audioOn) return;
-  ensureAudio();
+
   const ctx = gameState.audioCtx;
 
+  // Oscillator for harsh tone
   const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  osc.type = "square";               // ✅ harsher than sine
+  osc.frequency.value = 100;         // deep boom
 
-  // Start at high pitch, slide down fast (cartoon "boing")
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(600, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.4);
+  // Gain (volume control)
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0.7;         // ✅ much louder than normal beep
 
-  // Volume envelope
-  gain.gain.setValueAtTime(0.2, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+  // Connect nodes
+  osc.connect(gainNode);
+  gainNode.connect(ctx.destination);
 
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
+  // Explosion-like fade out
   osc.start();
-  osc.stop(ctx.currentTime + 0.4);
+  gainNode.gain.exponentialRampToValueAtTime(
+    0.01,
+    ctx.currentTime + 0.6
+  );
+  osc.stop(ctx.currentTime + 0.6);
 }
+
 /*function startMusicLoop() {
   if (gameState.musicInterval || !gameState.audioOn) return;
   ensureAudio();
