@@ -277,32 +277,28 @@ function playPopSound() {
 }
 function playBombSound() {
   if (!gameState.audioOn) return;
-
+  ensureAudio();
   const ctx = gameState.audioCtx;
 
-  // Oscillator for harsh tone
   const osc = ctx.createOscillator();
-  osc.type = "square";               // ✅ harsher than sine
-  osc.frequency.value = 100;         // deep boom
+  const gain = ctx.createGain();
 
-  // Gain (volume control)
-  const gainNode = ctx.createGain();
-  gainNode.gain.value = 0.7;         // ✅ much louder than normal beep
+  // Start at high pitch, slide down fast (cartoon "boing")
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(600, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.4);
 
-  // Connect nodes
-  osc.connect(gainNode);
-  gainNode.connect(ctx.destination);
+  // Volume envelope
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
 
-  // Explosion-like fade out
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
   osc.start();
-  gainNode.gain.exponentialRampToValueAtTime(
-    0.01,
-    ctx.currentTime + 0.6
-  );
-  osc.stop(ctx.currentTime + 0.6);
+  osc.stop(ctx.currentTime + 0.4);
 }
-
-/*function startMusicLoop() {
+function startMusicLoop() {
   if (gameState.musicInterval || !gameState.audioOn) return;
   ensureAudio();
   const ctx = gameState.audioCtx;
@@ -311,15 +307,7 @@ function playBombSound() {
     [262, 330, 392, 523],
     [262, 294, 330, 349, 392],
     [392, 330, 349, 262, 294]
-  ];*/
-  osc.connect(gameState.audioCtx.destination);
-
-// 👉 replace with
-const gainNode = gameState.audioCtx.createGain();
-osc.connect(gainNode);
-gainNode.connect(gameState.audioCtx.destination);
-gainNode.gain.value = 0.3;  // adjust volume here
-
+  ];
 
   const melody = melodies[Math.floor(Math.random() * melodies.length)];
   let index = 0;
@@ -355,15 +343,9 @@ gainNode.gain.value = 0.3;  // adjust volume here
 
 
 
-/*function stopMusicLoop() {
-  if (gameState.musicInterval) {
-    clearInterval(gameState.musicInterval);
-    gameState.musicInterval = null;
-  }
-}*/
 function stopMusicLoop() {
   if (gameState.musicInterval) {
-    clearTimeout(gameState.musicInterval); // ✅ instead of clearInterval
+    clearInterval(gameState.musicInterval);
     gameState.musicInterval = null;
   }
 }
@@ -473,27 +455,24 @@ GAME TIMER
 --------------------------*/
 let gameTicker=null;
 function startTimer() {
-  gameTicker = setInterval(() => {
-    if (!gameState.running) return;
+  const timer = setInterval(() => {
+    gameState.timeLeft--;
+    timeLeftEl.textContent = gameState.timeLeft;
+    progressFill.style.width = (gameState.timeLeft / gameState.gameDuration) * 100 + '%';
 
+    // 🎵 speed up music as time runs out
     if (gameState.timeLeft > 0) {
-      gameState.timeLeft--;
-      updateHUD();
-
-      // 🎵 Speed up music as time runs out
-      const progress = 1 - (gameState.timeLeft / gameState.timer);
+      const progress = 1 - (gameState.timeLeft / gameState.gameDuration);
+      // tempo goes from 550ms → 300ms gradually
       gameState.musicTempo = 550 - Math.floor(progress * 250);
     }
 
     if (gameState.timeLeft <= 0) {
-      clearInterval(gameTicker);
-      gameState.timeLeft = 0;  // ✅ lock at 0
-      updateHUD();
+      clearInterval(timer);
       endGame();
     }
   }, 1000);
 }
-
 
 
 /* --------------------------
@@ -571,30 +550,24 @@ localStorage.setItem('balloon_scores',JSON.stringify(prev.slice(0,20)));
 /* --------------------------
 START / RESET
 --------------------------*/
-function startGame() {
-  if (gameState.running) return;
-  gameState.running = true;
-  gameState.score = 0;
-  gameState.clicks = 0;
-  gameState.popped = 0;
-  gameState.bombsClicked = 0;
-  gameState.misses = 0;
-  gameState.reactionTimes = [];
-  gameState.timer = parseInt(gameTimeSel.value, 10);
-  gameState.timeLeft = gameState.timer;   // ✅ reset here
-  updateHUD();
-
-  startBtn.disabled = true;
-  startBtn.textContent = 'Running...';
-  reportModal.classList.remove('show');
-
-  spawnOne();
-  startTimer();
-
-  if (gameState.audioOn) startMusicLoop();
+function startGame(){
+if(gameState.running)return;
+gameState.running=true;
+gameState.score=0;
+gameState.clicks=0;
+gameState.popped=0;
+gameState.bombsClicked=0;
+gameState.misses=0;
+gameState.reactionTimes=[];
+gameState.timer=parseInt(gameTimeSel.value,10);
+updateHUD();
+startBtn.disabled=true;
+startBtn.textContent='Running...';
+reportModal.classList.remove('show');
+spawnOne();
+startTimer();
+if(gameState.audioOn)startMusicLoop();
 }
-
-
 
 function resetGame(){
     gameState.running=false;
@@ -646,3 +619,4 @@ updateHUD();
 </script>
 </body>
 </html>
+
