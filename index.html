@@ -455,24 +455,28 @@ GAME TIMER
 --------------------------*/
 let gameTicker=null;
 function startTimer() {
-  const timer = setInterval(() => {
+  if (gameTicker) clearInterval(gameTicker); // clear any old timers
+  gameState.timeLeft = gameState.timer;      // reset countdown
+
+  updateHUD(); // show correct time at start
+
+  gameTicker = setInterval(() => {
     gameState.timeLeft--;
-    timeLeftEl.textContent = gameState.timeLeft;
-    progressFill.style.width = (gameState.timeLeft / gameState.gameDuration) * 100 + '%';
+    updateHUD();
 
     // 🎵 speed up music as time runs out
     if (gameState.timeLeft > 0) {
-      const progress = 1 - (gameState.timeLeft / gameState.gameDuration);
-      // tempo goes from 550ms → 300ms gradually
-      gameState.musicTempo = 550 - Math.floor(progress * 250);
+      const progress = 1 - (gameState.timeLeft / gameState.timer);
+      gameState.musicTempo = 550 - Math.floor(progress * 250); // 550 → 300
     }
 
     if (gameState.timeLeft <= 0) {
-      clearInterval(timer);
+      clearInterval(gameTicker);
       endGame();
     }
   }, 1000);
 }
+
 
 
 /* --------------------------
@@ -560,6 +564,7 @@ gameState.bombsClicked=0;
 gameState.misses=0;
 gameState.reactionTimes=[];
 gameState.timer=parseInt(gameTimeSel.value,10);
+gameState.timeLeft = gameState.timer;
 updateHUD();
 startBtn.disabled=true;
 startBtn.textContent='Running...';
