@@ -455,20 +455,21 @@ GAME TIMER
 --------------------------*/
 let gameTicker=null;
 function startTimer() {
-  const timer = setInterval(() => {
-    gameState.timeLeft--;
-    timeLeftEl.textContent = gameState.timeLeft;
-    progressFill.style.width = (gameState.timeLeft / gameState.gameDuration) * 100 + '%';
+  gameTicker = setInterval(() => {
+    if (!gameState.running) return;
 
-    // 🎵 speed up music as time runs out
+    gameState.timeLeft--;
+
+    updateHUD(); // updates timerBox, score, clicks, popped
+
+    // 🎵 Speed up music as time runs out
     if (gameState.timeLeft > 0) {
-      const progress = 1 - (gameState.timeLeft / gameState.gameDuration);
-      // tempo goes from 550ms → 300ms gradually
+      const progress = 1 - (gameState.timeLeft / gameState.timer);
       gameState.musicTempo = 550 - Math.floor(progress * 250);
     }
 
     if (gameState.timeLeft <= 0) {
-      clearInterval(timer);
+      clearInterval(gameTicker);
       endGame();
     }
   }, 1000);
@@ -551,23 +552,25 @@ localStorage.setItem('balloon_scores',JSON.stringify(prev.slice(0,20)));
 START / RESET
 --------------------------*/
 function startGame(){
-if(gameState.running)return;
-gameState.running=true;
-gameState.score=0;
-gameState.clicks=0;
-gameState.popped=0;
-gameState.bombsClicked=0;
-gameState.misses=0;
-gameState.reactionTimes=[];
-gameState.timer=parseInt(gameTimeSel.value,10);
-updateHUD();
-startBtn.disabled=true;
-startBtn.textContent='Running...';
-reportModal.classList.remove('show');
-spawnOne();
-startTimer();
-if(gameState.audioOn)startMusicLoop();
+  if(gameState.running)return;
+  gameState.running=true;
+  gameState.score=0;
+  gameState.clicks=0;
+  gameState.popped=0;
+  gameState.bombsClicked=0;
+  gameState.misses=0;
+  gameState.reactionTimes=[];
+  gameState.timer=parseInt(gameTimeSel.value,10);
+  gameState.timeLeft=gameState.timer;   // ✅ Reset here
+  updateHUD();
+  startBtn.disabled=true;
+  startBtn.textContent='Running...';
+  reportModal.classList.remove('show');
+  spawnOne();
+  startTimer();
+  if(gameState.audioOn)startMusicLoop();
 }
+
 
 function resetGame(){
     gameState.running=false;
