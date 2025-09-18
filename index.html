@@ -343,9 +343,15 @@ function startMusicLoop() {
 
 
 
-function stopMusicLoop() {
+/*function stopMusicLoop() {
   if (gameState.musicInterval) {
     clearInterval(gameState.musicInterval);
+    gameState.musicInterval = null;
+  }
+}*/
+function stopMusicLoop() {
+  if (gameState.musicInterval) {
+    clearTimeout(gameState.musicInterval); // ✅ instead of clearInterval
     gameState.musicInterval = null;
   }
 }
